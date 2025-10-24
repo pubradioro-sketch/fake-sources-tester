@@ -31,7 +31,8 @@ jobs:
         shell: pwsh
         run: |
           ./venv/Scripts/Activate.ps1
-          pyinstaller --onefile --windowed --name "FakeSourcesTesterPro" main_gui_pro.py
+          pyinstaller --onefile --windowed --hidden-import PySimpleGUI --name "FakeSourcesTesterPro" main_gui_pro.py
+
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
