@@ -21,7 +21,7 @@ jobs:
         shell: pwsh
         run: |
           python -m venv venv
-          ./venv/Scripts/Activate.ps1
+          & .\venv\Scripts\Activate.ps1
           python -m pip install --upgrade pip
           pip install requests==2.31.0
           pip install PySimpleGUI==4.70.0
@@ -30,9 +30,8 @@ jobs:
       - name: Build EXE with PyInstaller (inside venv)
         shell: pwsh
         run: |
-          ./venv/Scripts/Activate.ps1
-          pyinstaller --onefile --windowed --hidden-import PySimpleGUI --name "FakeSourcesTesterPro" main_gui_pro.py
-
+          & .\venv\Scripts\Activate.ps1
+          .\venv\Scripts\pyinstaller.exe --onefile --windowed --hidden-import PySimpleGUI --name "FakeSourcesTesterPro" main_gui_pro.py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
