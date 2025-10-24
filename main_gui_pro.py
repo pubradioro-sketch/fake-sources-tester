@@ -9,7 +9,6 @@ import PySimpleGUI as sg
 import threading, time, os, json
 from core import parse_profiles, run_test, summarize, save_csv, generate_html_report
 
-sg.theme('LightBlue')
 
 PRESETS_FILE = 'presets.json'
 
