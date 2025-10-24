@@ -1,9 +1,9 @@
-
 #!/usr/bin/env python3
-'''main_gui_pro.py - GUI Pro version.
+"""
+main_gui_pro.py - GUI Pro version.
 Use only on systems you own / have permission to test.
 Shows progress bar, live metrics, histogram, request log, CSV + HTML export, presets, URL validation.
-'''
+"""
 
 import PySimpleGUI as sg
 import threading, time, os, json
@@ -44,52 +44,118 @@ def validate_url(u):
 def build_histogram(latencies, bins=8):
     if not latencies:
         return 'No data'
-    mn = min(latencies); mx = max(latencies)
+    mn = min(latencies)
+    mx = max(latencies)
     if mn == mx:
         return f'All latencies: {mn:.1f} ms'
     span = (mx - mn) if (mx - mn) > 0 else 1
     width = span / bins
     counts = [0]*bins
     for v in latencies:
-        idx = int((v-mn)/width)
+        idx = int((v - mn) / width)
         if idx == bins:
-            idx = bins-1
-        counts[idx]+=1
+            idx = bins - 1
+        counts[idx] += 1
     out_lines = []
     total = len(latencies)
-    for i,c in enumerate(counts):
+    for i, c in enumerate(counts):
         low = mn + i*width
         high = low + width
-        bar = '█'*(c*40//total) if total>0 else ''
+        bar = '█'*(c*40//total) if total > 0 else ''
         out_lines.append(f'{low:.0f}-{high:.0f} ms |{bar} ({c})')
     return '\n'.join(out_lines)
 
 presets = load_presets()
 
 layout = [
-    [sg.Text('Target URL:'), sg.Input(key='-URL-', size=(70,1)), sg.Text('', key='-URLVAL-')],
-    [sg.Text('Requests/profile'), sg.Input('10', key='-REQS-', size=(6,1)),
-     sg.Text('Threads/profile'), sg.Input('2', key='-THREADS-', size=(6,1)),
-     sg.Text('Timeout(s)'), sg.Input('10', key='-TOUT-', size=(6,1)),
-     sg.Checkbox('Verify TLS', key='-VERIFY-', default=True),
-     sg.Checkbox('Allow redirects', key='-REDIR-', default=True)],
-    [sg.Text('Proxies file'), sg.Input(key='-PROXFILE-', size=(50,1)), sg.FileBrowse()],
-    [sg.Text('Profiles'), sg.Combo(list(presets.keys()), key='-PRESETS-', enable_events=True),
-     sg.Button('Load Preset'), sg.Button('Save Preset'), sg.Button('Add Preset')],
-    [sg.Multiline('\n'.join(presets.get('Default',[])), key='-PROFILES-', size=(100,8))],
-    [sg.Button('Start Test', key='-START-'),
-     sg.Button('Stop', key='-STOP-', disabled=True),
-     sg.Button('Save CSV', key='-SAVE-', disabled=True),
-     sg.Button('Export HTML', key='-HTML-', disabled=True)],
-    [sg.Text('Progress:'), sg.Text('Idle', key='-PROG-'),
-     sg.ProgressBar(100, orientation='h', size=(40,20), key='-PB-')],
-    [sg.Frame('Live Metrics', [[sg.Multiline('', size=(70,10), key='-METRICS-', disabled=True)]),
-              sg.Frame('Latency Histogram', [[sg.Multiline('', size=(40,10), key='-HIST-', disabled=True)]])],
-    [sg.Frame('Request Log (tail 200)', [[sg.Multiline('', size=(120,8), key='-LOG-', disabled=True)]])],
-    [sg.Text('Legal: Use only on property you own or have permission to test.')]
+    [
+        sg.Text('Target URL:'),
+        sg.Input(key='-URL-', size=(70,1)),
+        sg.Text('', key='-URLVAL-')
+    ],
+    [
+        sg.Text('Requests/profile'),
+        sg.Input('10', key='-REQS-', size=(6,1)),
+        sg.Text('Threads/profile'),
+        sg.Input('2', key='-THREADS-', size=(6,1)),
+        sg.Text('Timeout(s)'),
+        sg.Input('10', key='-TOUT-', size=(6,1)),
+        sg.Checkbox('Verify TLS', key='-VERIFY-', default=True),
+        sg.Checkbox('Allow redirects', key='-REDIR-', default=True)
+    ],
+    [
+        sg.Text('Proxies file'),
+        sg.Input(key='-PROXFILE-', size=(50,1)),
+        sg.FileBrowse()
+    ],
+    [
+        sg.Text('Profiles'),
+        sg.Combo(list(presets.keys()), key='-PRESETS-', enable_events=True),
+        sg.Button('Load Preset'),
+        sg.Button('Save Preset'),
+        sg.Button('Add Preset')
+    ],
+    [
+        sg.Multiline('\n'.join(presets.get('Default',[])),
+                     key='-PROFILES-',
+                     size=(100,8))
+    ],
+    [
+        sg.Button('Start Test', key='-START-'),
+        sg.Button('Stop', key='-STOP-', disabled=True),
+        sg.Button('Save CSV', key='-SAVE-', disabled=True),
+        sg.Button('Export HTML', key='-HTML-', disabled=True)
+    ],
+    [
+        sg.Text('Progress:'),
+        sg.Text('Idle', key='-PROG-'),
+        sg.ProgressBar(100,
+                       orientation='h',
+                       size=(40,20),
+                       key='-PB-')
+    ],
+    [
+        sg.Frame(
+            'Live Metrics',
+            [[sg.Multiline('',
+                           size=(70,10),
+                           key='-METRICS-',
+                           disabled=True)]],
+            expand_x=True,
+            expand_y=True
+        ),
+        sg.Frame(
+            'Latency Histogram',
+            [[sg.Multiline('',
+                           size=(40,10),
+                           key='-HIST-',
+                           disabled=True)]],
+            expand_x=True,
+            expand_y=True
+        )
+    ],
+    [
+        sg.Frame(
+            'Request Log (tail 200)',
+            [[sg.Multiline('',
+                           size=(120,8),
+                           key='-LOG-',
+                           disabled=True)]],
+            expand_x=True,
+            expand_y=True
+        )
+    ],
+    [
+        sg.Text('Legal: Use only on property you own or have permission to test.')
+    ]
 ]
 
-window = sg.Window('Fake Sources Tester Pro', layout, finalize=True, resizable=True)
+window = sg.Window(
+    'Fake Sources Tester Pro',
+    layout,
+    finalize=True,
+    resizable=True
+)
 
 stop_event = threading.Event()
 results = []
@@ -106,7 +172,17 @@ def updater_thread():
 def run_worker(url, profiles, reqs, threads, tout, allow_redirects, verify, proxies):
     global results
     results = []
-    res = run_test(url, profiles, reqs, threads, tout, allow_redirects, verify, proxies=proxies, stop_event=stop_event)
+    res = run_test(
+        url,
+        profiles,
+        reqs,
+        threads,
+        tout,
+        allow_redirects,
+        verify,
+        proxies=proxies,
+        stop_event=stop_event
+    )
     window.write_event_value('-DONE-', res)
 
 while True:
@@ -204,7 +280,7 @@ while True:
 
         # live tail log
         tail = '\n'.join([
-            f'[{r.get("status")}] {r.get("latency_ms")}ms {r.get("profile")} proxy={r.get("proxy","")}' 
+            f'[{r.get("status")}] {r.get("latency_ms")}ms {r.get("profile")} proxy={r.get("proxy","")}'
             for r in results[-200:]
         ])
         window['-LOG-'].update(tail)
@@ -226,7 +302,7 @@ while True:
         window['-HIST-'].update(build_histogram(lats))
 
         tail = '\n'.join([
-            f'[{r.get("status")}] {r.get("latency_ms")}ms {r.get("profile")} proxy={r.get("proxy","")}' 
+            f'[{r.get("status")}] {r.get("latency_ms")}ms {r.get("profile")} proxy={r.get("proxy","")}'
             for r in results[-200:]
         ])
         window['-LOG-'].update(tail)
@@ -235,7 +311,10 @@ while True:
         if not results:
             sg.popup('No results')
         else:
-            fn = sg.popup_get_file('Save CSV', save_as=True, default_extension='csv', file_types=(('CSV','*.csv'),))
+            fn = sg.popup_get_file('Save CSV',
+                                   save_as=True,
+                                   default_extension='csv',
+                                   file_types=(('CSV','*.csv'),))
             if fn:
                 save_csv(results, fn)
                 sg.popup('Saved:', fn)
@@ -244,7 +323,10 @@ while True:
         if not results:
             sg.popup('No results')
         else:
-            fn = sg.popup_get_file('Save HTML report', save_as=True, default_extension='html', file_types=(('HTML','*.html'),))
+            fn = sg.popup_get_file('Save HTML report',
+                                   save_as=True,
+                                   default_extension='html',
+                                   file_types=(('HTML','*.html'),))
             if fn:
                 generate_html_report(results, fn)
                 sg.popup('Saved HTML report:', fn)
