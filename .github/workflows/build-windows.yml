@@ -32,7 +32,7 @@ jobs:
       shell: pwsh
       run: |
         & .\venv\Scripts\Activate.ps1
-        .\venv\Scripts\pyinstaller.exe --onefile --windowed --hidden-import PySimpleGUI --name "FakeSourcesTesterPro" main_gui_pro.py
+        .\venv\Scripts\pyinstaller.exe --onefile --windowed --hidden-import PySimpleGUI --collect-all PySimpleGUI --name "FakeSourcesTesterPro" main_gui_pro.py
 
     - name: Upload EXE artifact
       uses: actions/upload-artifact@v4
