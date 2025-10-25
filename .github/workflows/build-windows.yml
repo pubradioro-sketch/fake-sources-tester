@@ -18,18 +18,21 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Install dependencies
+    - name: Create venv and install deps
+      shell: pwsh
       run: |
         python -m venv venv
-        .\venv\Scripts\activate
-        pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pyinstaller PySimpleGUI
+        & .\venv\Scripts\Activate.ps1
+        python -m pip install --upgrade pip
+        pip install requests==2.31.0
+        pip install PySimpleGUI==4.70.0
+        pip install pyinstaller==5.13.0
 
-    - name: Build EXE with icon
+    - name: Build EXE (no icon)
+      shell: pwsh
       run: |
-        .\venv\Scripts\activate
-        pyinstaller --onefile --windowed --icon=publive.ico --name "FakeSourcesTesterPro" main_gui_pro.py
+        & .\venv\Scripts\Activate.ps1
+        .\venv\Scripts\pyinstaller.exe --onefile --windowed --hidden-import PySimpleGUI --name "FakeSourcesTesterPro" main_gui_pro.py
 
     - name: Upload EXE artifact
       uses: actions/upload-artifact@v4
