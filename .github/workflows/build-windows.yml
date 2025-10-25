@@ -27,23 +27,20 @@ jobs:
         # 2. Activează venv
         & .\venv\Scripts\Activate.ps1
 
-        # 3. Instalează dependențe
+        # 3. Instalează dependențele
         python -m pip install --upgrade pip
         pip install requests==2.31.0
         pip install PySimpleGUI==4.70.0
         pip install pyinstaller==5.13.0
 
-        # 4. Creează un entry script temporar (builder.py)
-        #    Acest script doar importă PySimpleGUI și apoi importă aplicația ta
-        #    Ca PyInstaller să bage totul în exe.
-        Set-Content -Path builder.py -Value @"
-import PySimpleGUI as sg
-import main_gui_pro
-if __name__ == '__main__':
-    # rulăm main_gui_pro direct
-    # dacă main_gui_pro pornește fereastra la import/executare, se va lansa normal
-    pass
-"@
+        # 4. Creează builder.py linie cu linie (fără @" "@ ca să nu stricăm YAML)
+        Remove-Item -ErrorAction Ignore builder.py
+        Add-Content builder.py "import PySimpleGUI as sg"
+        Add-Content builder.py "import main_gui_pro"
+        Add-Content builder.py ""
+        Add-Content builder.py "if __name__ == '__main__':"
+        Add-Content builder.py "    # dacă main_gui_pro pornește GUI la import, se lansează normal"
+        Add-Content builder.py "    pass"
 
         # 5. Rulează PyInstaller DIN acest venv, pe builder.py
         .\venv\Scripts\pyinstaller.exe --onefile --windowed --hidden-import PySimpleGUI --collect-all PySimpleGUI --name "FakeSourcesTesterPro" builder.py
