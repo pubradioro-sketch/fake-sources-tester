@@ -18,21 +18,35 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Create venv and install deps
+    - name: Create venv, install deps and build EXE inside venv
       shell: pwsh
       run: |
+        # 1. Creează venv
         python -m venv venv
+
+        # 2. Activează venv
         & .\venv\Scripts\Activate.ps1
+
+        # 3. Instalează dependențe
         python -m pip install --upgrade pip
         pip install requests==2.31.0
         pip install PySimpleGUI==4.70.0
         pip install pyinstaller==5.13.0
 
-    - name: Build EXE (no icon)
-      shell: pwsh
-      run: |
-        & .\venv\Scripts\Activate.ps1
-        .\venv\Scripts\pyinstaller.exe --onefile --windowed --hidden-import PySimpleGUI --collect-all PySimpleGUI --name "FakeSourcesTesterPro" main_gui_pro.py
+        # 4. Creează un entry script temporar (builder.py)
+        #    Acest script doar importă PySimpleGUI și apoi importă aplicația ta
+        #    Ca PyInstaller să bage totul în exe.
+        Set-Content -Path builder.py -Value @"
+import PySimpleGUI as sg
+import main_gui_pro
+if __name__ == '__main__':
+    # rulăm main_gui_pro direct
+    # dacă main_gui_pro pornește fereastra la import/executare, se va lansa normal
+    pass
+"@
+
+        # 5. Rulează PyInstaller DIN acest venv, pe builder.py
+        .\venv\Scripts\pyinstaller.exe --onefile --windowed --hidden-import PySimpleGUI --collect-all PySimpleGUI --name "FakeSourcesTesterPro" builder.py
 
     - name: Upload EXE artifact
       uses: actions/upload-artifact@v4
